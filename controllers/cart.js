@@ -55,6 +55,100 @@ exports.addToCart = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+exports.addItemsToCart=async(req,res)=>{
+  // console.log(req.user);
+   try {
+
+    const userId = req.user.userId;
+    const  items = req.body;
+    if (!Array.isArray(items) || !items.length) {
+
+      return res.status(400).json({
+        success: false,
+        message: 'Cart items are required'
+      });
+
+    }
+
+    let cart = await Cart.findOne({ userId });
+
+    /**
+     * Create cart if not exists
+     */
+    if (!cart) {
+
+      cart = await Cart.create({
+        userId,
+        items: []
+      });
+
+    }
+
+    /**
+     * Add/update items
+     */
+    items.forEach((incomingItem) => {
+      console.log(cart.items);
+      const existingItem =
+        cart.items.find((item) => {
+          
+          return (
+            item.productId?.toString() ===
+              incomingItem.productId &&
+            item.variantId ===
+              incomingItem.variantId
+          );
+
+        });
+
+      /**
+       * If item already exists
+       * increase quantity
+       */
+      if (existingItem) {
+
+        existingItem.quantity +=
+          incomingItem.quantity;
+
+      }
+
+      /**
+       * Else push new item
+       */
+      else {
+
+        cart.items.push({
+          productId: incomingItem.productId,
+          variantId: incomingItem.variantId,
+          quantity: incomingItem.quantity
+        });
+
+      }
+
+    });
+
+    await cart.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Items added to cart',
+      cart
+    });
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+
+  }
+
+}
 exports.getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ userId: req.user.id });
