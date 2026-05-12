@@ -4,6 +4,7 @@ exports.authMiddleware = (req, res, next) => {
 
   try {
 
+    
     const token = req.cookies.accessToken;
 
     if (!token) {
