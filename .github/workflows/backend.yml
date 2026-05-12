@@ -2,12 +2,8 @@ name: Backend CI
 
 on:
   push:
-    paths:
-      - 'middleware/**'
-
   pull_request:
-    paths:
-      - 'middleware/**'
+   
 
 jobs:
   build:
